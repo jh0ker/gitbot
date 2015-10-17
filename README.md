@@ -16,4 +16,6 @@ The file is prepared to be run by anyone by filling out the blanks in the config
 * Visit https://BASE_URL/set_webhook on your web browser to set up webhook.
 * Follow Bot instructions
 
-#### Important: You need to have a working SSL setup to use the Telegram API
+## SSL
+You can start the server without an SSL context, if this is handled by another programm, like Apache or haproxy. You can leave out the SSL Information in the header and select the second run-line at the end of the file 
+Please note that you need a valid ssl certificate or a self-signed one. Please refer to [this gist](https://gist.github.com/leandrotoledo/4e9362acdc5db33ae16c) for an example with self-signed certs.

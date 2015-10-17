@@ -7,10 +7,14 @@ from flask import Flask, request
 BOTNAME = 'examplebot'  # The name of the bot, without @
 TOKEN = ''  # Security Token given from the @BotFather
 BASE_URL = 'sub.example.com'  # Domain name of your server, without protocol. You may include a port, if you dont want to use 443.
-HOST = '0.0.0.0'  # IP Address of your server
+HOST = '0.0.0.0'  # IP Address on which Flask should listen on
 PORT = 5000  # Port on which Flask should listen on
 
+CERT     = '/etc/pki/tls/certs/examplebot.pem'
+CERT_KEY = '/etc/pki/tls/certs/examplebot.key'
+
 ABOTNAME = '@' + BOTNAME
+CONTEXT = (CERT, CERT_KEY)
 
 app = Flask(__name__)
 
@@ -125,6 +129,9 @@ def set_webhook():
 def index():
     return 'Gitbot is running!'
     
-# Start Flask
-app.run(host=HOST,port=PORT, threaded=True, debug=True)
+# Start Flask with SSL handling
+app.run(host=HOST,port=PORT, ssl_context=CONTEXT, threaded=True, debug=False)
+
+# Start Flask without SSL handling
+#app.run(host=HOST,port=PORT, threaded=True, debug=False)
 
