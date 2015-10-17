@@ -13,6 +13,7 @@ The file is prepared to be run by anyone by filling out the blanks in the config
 ## How to use
 * Install the script
 * Edit BOTNAME, TOKEN, BASE_URL, HOST and PORT in bot.py
+* If you want to handle SSL with Flask, also fill out the CERT and CERT_KEY fields and check the section about SSL.
 * Visit https://BASE_URL/set_webhook on your web browser to set up webhook.
 * Follow Bot instructions
 
