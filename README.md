@@ -1,4 +1,4 @@
-# Simple-Echo-Telegram-Bot
+# Jannes' GitBot
 #### A Python Telegram bot that notifies you via Telegram if there is a push event in one of your repositories
 
 It uses the Flask microframework and the [python-telegram-bot](https://github.com/leandrotoledo/python-telegram-bot) library. It's based on this [example](https://github.com/sooyhwang/Simple-Echo-Telegram-Bot).
