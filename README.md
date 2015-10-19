@@ -3,6 +3,8 @@
 
 It uses the Flask microframework and the [python-telegram-bot](https://github.com/leandrotoledo/python-telegram-bot) library. It's based on this [example](https://github.com/sooyhwang/Simple-Echo-Telegram-Bot).
 
+Please also check out my other bots, [TexBot](https://github.com/jh0ker/texbot) and [Welcome Bot](https://github.com/jh0ker/welcomebot).
+
 The file is prepared to be run by anyone by filling out the blanks in the configuration.
 
 ## Required
