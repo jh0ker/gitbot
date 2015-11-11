@@ -40,38 +40,51 @@ def escape_markdown(text):
 # The Webhook for GitLab and GitHub
 @app.route('/webhook_git/<chat_id>', methods=['GET', 'POST'])
 def git_webhook_handler(chat_id):
-    if request.method == "POST":
-    
-        data = request.get_json(force=True)
+    try:
+        if request.method == "POST":
         
-        # Adjust for differences in GitLab and GitHub
-        name = None
-        if 'object_kind' in data and data['object_kind'] == 'push':
-            name = data['user_name']
-        elif 'pusher' in data:
-            name = data['pusher']['name']
-        elif 'hook' in data:
-            bot.sendMessage(chat_id=int(chat_id), text='GitHub-Hook for %s activated!' % data['repository']['full_name'])
-            return ''
+            data = request.get_json(force=True)
             
-        # Construct message and send it to the chat
-        if name is not None:
-            text = '⬆️ *%s* pushed to %s:\n' % (escape_markdown(name), escape_markdown(data['ref'].split('/')[-1]))
+            # Adjust for differences in GitLab and GitHub
+            name = None
+            if 'object_kind' in data and data['object_kind'] == 'push':  # GitLab
+                name = data['user_name']
+            elif 'pusher' in data:  # GitLab
+                name = data['pusher']['name']
+            elif 'hook' in data:  # GitHub-Webhook activated
+                bot.sendMessage(chat_id=int(chat_id), text='GitHub-Hook for %s activated!' % data['repository']['full_name'])
+                return ''
+                
+            if 'name' in data['repository']:  # GitLab
+                repo = data['repository']['name']
+            elif 'full_name' in data['repository']:  # GitHub
+                repo = data['repository']['full_name']
+            else:
+                repo = '<unknown>'
             
-            for commit in data['commits']:
-                text += '*%s*: %s%s' % (escape_markdown(commit['author']['name']), escape_markdown(commit['message']), 
-                        ('\n' if commit['message'][-1] != '\n' else ''))
+            repo += '/' + data['ref'].split('/')[-1]
+                
+            # Construct message and send it to the chat
+            if name is not None:
+                text = '⬆️ *%s* pushed to %s:\n' % (escape_markdown(name), escape_markdown(repo))
+                
+                for commit in data['commits']:
+                    text += '*%s*: %s%s' % (escape_markdown(commit['author']['name']), escape_markdown(commit['message']), 
+                            ('\n' if commit['message'][-1] != '\n' else ''))
+                
+                text += '[Check last commit...](%s)' % escape_markdown(data['commits'][-1]['url'])
+                
+                bot.sendMessage(chat_id=int(chat_id), text=text, parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True)
             
-            text += '[Check last commit...](%s)' % escape_markdown(data['commits'][-1]['url'])
-            
-            bot.sendMessage(chat_id=int(chat_id), text=text, parse_mode=telegram.ParseMode.MARKDOWN)
-        
-        else:
-            print('WARNING: Unknown git request!')
-            print(data)
+            else:
+                print('WARNING: Unknown git request!')
+                print(data)
+                
+    except:
+        traceback.print_exc()
 
     return ''
-    
+        
 # Generate git webhook. No persistence needed, we just use the chat_id
 def register_git(update):
     chat_id = update.message.chat.id
@@ -96,6 +109,9 @@ def tg_webhook_handler():
         
         # retrieve the message in JSON and then transform it to Telegram object
         update = telegram.Update.de_json(request.get_json(force=True))
+        # Message is empty
+        
+        text = update.message.text
         
         # split command into list of words and remove mentions of botname
         text = list([word.replace(ABOTNAME, '') for word in filter(lambda word2: word2 != ABOTNAME, text.split())])
@@ -103,10 +119,9 @@ def tg_webhook_handler():
         # Bot was invited to a group chat
         if update.message.new_chat_participant is not None and update.message.new_chat_participant.username == BOTNAME:
             return help(update)
-        # Message is empty
+        # Run commands
         elif len(text) is 0:
             return 'ok'
-        # Run commands
         elif text[0] == '/register_git':
             return register_git(update)
         elif text[0] == '/help' or text[0] == '/start':
@@ -114,11 +129,12 @@ def tg_webhook_handler():
             
     return 'ok'
 
+
 # Go to https://BASE_URL/set_webhook with your browser to register the telegram webhook of your bot
 # You may want to comment out this route after triggering it once
-# @app.route('/set_webhook', methods=['GET', 'POST'])
+@app.route('/set_webhook', methods=['GET', 'POST'])
 def set_webhook():
-    s = bot.setWebhook('https://%s/webhook_tg' % BASE_URL)
+    s = bot.setWebhook('https://%s/%s' % (BASE_URL, TOKEN))
     if s:
         return "webhook setup ok"
     else:
