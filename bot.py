@@ -103,7 +103,7 @@ def help(update):
     return 'ok'
 
 # The webhook for Telegram messages
-@app.route('/webhook_tg', methods=['POST'])
+@app.route('/%s' % TOKEN, methods=['POST'])
 def tg_webhook_handler():
     if request.method == "POST":
         
